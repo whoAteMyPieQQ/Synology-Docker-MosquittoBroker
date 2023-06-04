@@ -1,0 +1,136 @@
+1. Log into Synology. Go into File Station.
+
+2. Under [docker] root folder. Create a new folder called [mosquitto-demo].
+
+3. Under [mosquitto-demo] folder, create two new folders, [config] and [log]
+
+Your directory should mimic the following
+
+Docker/mosquitto-demo
+Docker/mosquitto-demo/config
+Docker/mosquitto-demo/log
+
+FYI, the folder names are for demo purposes, you are welcome to name these folders to anything you like.
+
+4. Go to https://github.com/whoAteMyPieQQ/Synology-Docker-MosquittoBroker and download [mosquitto.conf] and [mosquitto.log]
+
+5. Upload [mosquitto.conf] into [Docker/mosquitto-demo/config] folder.
+
+As you can see the conf file contain the bare essential configurations.
+
+6. Upload [mosquitto.log] into [Docker/mosquitto-demo/log] folder.
+
+As you can see the log file is empty, fresh.
+
+File and folder structure are done. We will now move onto setting up the Mosquitto server in Docker.
+
+6. Open Docker. Go to Registry, search for [mosquitto].
+
+7. Select [eclipse-mosquitto] and download this image.
+
+8. When prompted for the version, you can use [latest] for simplicity or choose one of the latest non open ssl verion. 
+
+9. Download this image and go into [Image] tab and await for download completion.
+
+10. In [Image] tab, find the [eclipse-mosquitto], then click [Launch]
+
+11. When prompted for Network setup, choose [Use the same network as Docker Host]. Click Next. 
+
+	FYI, mosquitto default port is 1883.
+
+12. Change [Container Name] to your preference. For this demo, we will call it [mosquitto-demo].
+
+13. Some people prefer checking [Enable auto-restart]. Enable this based on your preference. I will leave it off. As I would want to know if mosquitto server crashes. 
+
+14. Go into [Advanced Settings], under [Environment] tab. Add a new variable and the following value
+
+Variable: TZ
+Value: Pacific/Auckland
+
+Find your city's TZ using wiki
+https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#AUCKLAND
+
+15. Click Save
+
+16. Back in [General Settings], click Next
+
+17. Add a new folder 
+
+	Folder: docker/mosquitto-demo/config
+
+	Mount path: /mosquitto/config
+
+18. Add a new file
+
+	File: docker/mosquitto-demo/log/mosquitto.log
+
+	Mount path: /mosquitto/log/mosquitto.log
+
+
+FYI, the mount path is preset in mosquitto, thus needs to be exactly this.
+
+19. Click Next.
+
+20. Check if you want the instance to run immediately. Click Done.
+
+21. Back in Docker. Go into Contianer tab. Check if your mosquitto-demo instance is running. 
+
+22. Select your mosquitto-demo instance and click Details.
+
+23. Check the [Log] tab, it should be empty.
+
+24. Using Windows Explorer, navigate to your Synology nas. 
+
+25. Get into Docker > mosquitto-demo > log > mosquitto.log
+
+By default Docker folder isnt shared on the network. You may need to share the folder if you wish to do this validation. Not compulsory.
+
+Look through the log. A clean correct log should look like something below.
+
+	mosquitto version 2.0.9 starting
+	Config loaded from /mosquitto/config/mosquitto.conf.
+	Opening ipv4 listen socket on port 1883.
+	Opening ipv6 listen socket on port 1883.
+	mosquitto version 2.0.9 running
+
+If see an entry with the following [Starting in local only mode. Connections will only be possible from clients running on this machine]. This mean the instance have not read the conf file correctly. Double check the mounting path or ensure the conf file exist. 
+
+26. Google [MQTTX]. Go on there main page and download their desktop client app. Install and run the app.
+
+We will simulate messages being sent between two devices using our mosquitto server on Synology.
+
+27. In MQTTX, click on New Connection. Create a new device with the following info.
+
+Name: Device1
+Host: 10.1.8.3 (protocol can remain as mqtt://)
+
+28. Click Connect
+
+29. Create another device by clicking on the [+] button.
+
+Name: Device2
+Host: 10.1.8.3 (protocol can remain as mqtt://)
+
+30. Click Connect
+
+31.Under Device2, add New Subscription.
+
+Topic: SteaknChesePies
+
+32. Click Confirm
+
+33. Go back to Device1. 
+
+34. Create a message with the following info.
+
+Topic: SteaknChesePies
+Message: FreePieCoupon!
+Payload type: Plaintext
+
+35. And send!
+
+36. Now check Device2, it should now have received the latest topic and the associated message! 
+
+
+
+
